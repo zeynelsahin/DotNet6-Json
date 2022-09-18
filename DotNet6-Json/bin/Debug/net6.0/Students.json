@@ -1,0 +1,26 @@
+{
+  "deneme": "adasd",
+  "asdas": 5,
+  "notlar": [
+    {
+      "ders": "Türkçe",
+      "not": 50
+    },
+    {
+      "ders": "Matematik",
+      "not": 60
+    },
+    {
+      "ders": "Fizik",
+      "not": 70
+    },
+    {
+      "ders": "Kimya",
+      "not": 80
+    },
+    {
+      "ders": "Biyoloji",
+      "not": 90
+    }
+  ]
+}
