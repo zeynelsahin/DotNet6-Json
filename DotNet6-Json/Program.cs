@@ -190,6 +190,161 @@ void JsonDocument()
     }
 }
 
+void JsonNode()
+{
+    var jsonString = File.ReadAllText("Students.json", Encoding.Default);
+    var options = new JsonSerializerOptions() { WriteIndented = true };
+
+    var jsonNode = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+    Console.OutputEncoding = Encoding.UTF8;
+    Console.WriteLine(jsonNode.ToJsonString(options));
+
+    Console.WriteLine(jsonNode.AsObject().Count());
+    var keys = jsonNode.AsObject().Select(p => p.Key).ToList();
+    Console.WriteLine(string.Join(", ", keys));
+
+    var deneme = jsonNode["deneme"];
+    Console.WriteLine($"{deneme.GetType()}");
+    Console.WriteLine($"{deneme.ToJsonString()}");
+
+    var notlar = jsonNode["notlar"];
+    Console.WriteLine($"{notlar.GetType()}");
+    Console.WriteLine($"{notlar.ToJsonString()}");
+
+    Console.WriteLine($"{notlar[0].GetType()}");
+    Console.WriteLine($"{notlar[0].ToJsonString()}");
+
+    var not = jsonNode["notlar"][0];
+    var asdas = jsonNode["asdas"].GetValue<int>();
+    jsonNode.AsObject().Remove("asdas");
+    jsonNode.AsObject().Add("wind", asdas);
+
+
+    var jsonObject = new JsonObject()
+    {
+        ["deneme"] = DateTime.Now,
+        ["list"] = new JsonObject()
+        {
+            ["ders"] = "asd",
+            ["not"] = 50
+        },
+        ["array"] = new JsonArray() { "das", "dasd", "asd" }
+    };
+
+    Console.WriteLine(jsonObject.ToJsonString(new JsonSerializerOptions() { WriteIndented = true }));
+
+    Console.WriteLine(jsonObject["array"][0]);
+}
+
+void EncodingWithWriter()
+{
+    var optionBuilder = new JsonWriterOptions()
+    {
+        Indented = true
+    };
+
+    using var stream = new MemoryStream();
+    using var writer = new Utf8JsonWriter(stream, optionBuilder);
+    writer.WriteStartObject();
+    writer.WritePropertyName("id");
+    writer.WriteStringValue("123");
+
+    writer.WriteString("category", "teknoloji");
+    writer.WriteNumber("asd", 112);
+
+    writer.WriteStartObject("category");
+    writer.WriteString("name", "deneme");
+    writer.WriteNumber("id", 2);
+    writer.WriteEndObject();
+
+    writer.WriteStartArray("arrays");
+    writer.WriteStringValue("deneme");
+    writer.WriteStringValue("deneme");
+    writer.WriteStringValue("deneme");
+    writer.WriteEndArray();
+    writer.WriteNull("adsad");
+
+    writer.WriteStartArray("denemeArray");
+    writer.WriteNullValue();
+    writer.WriteEndArray();
+
+    var array = @"[
+{""id"":5,
+""not"":10},
+{""id"":5,
+""not"":10},
+{""id"":5,
+""not"":10}
+]";
+    writer.WritePropertyName("türkçe");
+    writer.WriteRawValue(array);
+    writer.WriteEndObject();
+    writer.Flush();
+
+    var json = Encoding.UTF8.GetString(stream.ToArray());
+    Console.OutputEncoding = Encoding.UTF8;
+    Console.WriteLine(json);
+}
+
+void EncodingFile()
+{
+    var stringJson = File.ReadAllText("Product.json");
+    using var fileStream = File.Create("OutProducts.json");
+    using var writer = new Utf8JsonWriter(fileStream);
+    using var document = System.Text.Json.JsonDocument.Parse(stringJson, new JsonDocumentOptions()
+    {
+        CommentHandling = JsonCommentHandling.Skip
+    });
+
+    var root = document.RootElement;
+
+    if (root.ValueKind == JsonValueKind.Object)
+    {
+        writer.WriteStartObject();
+    }
+    else return;
+
+    foreach (var jsonProperty in root.EnumerateObject())
+    {
+        jsonProperty.WriteTo(writer);
+    }
+
+    writer.WriteEndObject();
+    writer.Flush();
+}
+
+void EncodingUtfJsonReader()
+{
+    byte[] utf8Bom = new byte[]
+    {
+        0xEF, 0xBB, 0xBF
+    };
+
+    ReadOnlySpan<byte> jsonByte = File.ReadAllBytes("Product.json");
+    if (jsonByte.StartsWith(utf8Bom))
+    {
+        jsonByte = jsonByte.Slice(utf8Bom.Length);
+    }
+// var json = Encoding.UTF8.GetString(jsonByte);
+
+    var reader = new Utf8JsonReader(jsonByte);
+    Console.OutputEncoding = Encoding.UTF8;
+
+    string text;
+    while (reader.Read())
+    {
+        var tokenType = reader.TokenType;
+        Console.WriteLine(tokenType.ToString());
+
+        if (tokenType == JsonTokenType.String)
+        {
+            text = reader.GetString();
+
+            Console.WriteLine($" {text}");
+        }
+    }
+}
+
 // await Serialize();
 
 // await Deserialize();
@@ -212,51 +367,13 @@ void JsonDocument()
 
 // JsonDocument();
 
-var jsonString = File.ReadAllText("Students.json", Encoding.Default);
-var options = new JsonSerializerOptions() { WriteIndented = true };
+// JsonNode();
 
-var jsonNode = JsonNode.Parse(jsonString);
-Console.OutputEncoding = Encoding.UTF8;
-Console.WriteLine(jsonNode.ToJsonString(options));
+// EncodingWithWriter();
 
-Console.WriteLine(jsonNode.AsObject().Count());
-var keys = jsonNode.AsObject().Select(p => p.Key).ToList();
-Console.WriteLine(string.Join(", ", keys));
+// EncodingFile();
 
-var deneme = jsonNode["deneme"];
-Console.WriteLine($"{deneme.GetType()}");
-Console.WriteLine($"{deneme.ToJsonString()}");
-
-var notlar = jsonNode["notlar"];
-Console.WriteLine($"{notlar.GetType()}");
-Console.WriteLine($"{notlar.ToJsonString()}");
-
-Console.WriteLine($"{notlar[0].GetType()}");
-Console.WriteLine($"{notlar[0].ToJsonString()}");
-
-var not = jsonNode["notlar"][0];
-var asdas = jsonNode["asdas"].GetValue<int>();
-jsonNode.AsObject().Remove("asdas");
-jsonNode.AsObject().Add("wind",asdas );
-
-
-var jsonObject = new JsonObject()
-{
-    ["deneme"] = DateTime.Now,
-    ["list"] =new JsonObject()
-    {
-        ["ders"] = "asd",
-        ["not"] = 50
-    }
-    ,
-    ["array"]= new JsonArray(){"das","dasd","asd"}
-};
-
-Console.WriteLine(jsonObject.ToJsonString(new JsonSerializerOptions() { WriteIndented = true }));
-
-Console.WriteLine(jsonObject["array"][0]);
-
-
+// EncodingUtfJsonReader();
 
 class StudentModel
 {
