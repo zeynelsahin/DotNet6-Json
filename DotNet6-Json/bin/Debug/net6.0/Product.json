@@ -1,1 +1,19 @@
-﻿{"Name":"Zeynel","Surname":"Şahin","Age":21,"Category":{"Name":"Electronic","Id":5},"Categories":[{"Name":"Dress","Id":1}]}
+﻿{
+  "Name": "Zeynel",
+  "Surname": "Şahin", //deneme1
+  "Age": 21,
+  "Category": {
+    "Name": "Electronic", /*deneme2*/
+    "Id": 5
+  },
+  "Categories": [
+    {
+      "Name": "Dress",
+      "Id": 1
+    }
+  ],
+  "Date": "2022-09-19T00:00:00-07:00"
+}
+
+//deneme3
+ /*deneme2*/
